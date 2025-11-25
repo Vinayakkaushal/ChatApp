@@ -13,7 +13,7 @@ function MessageSkeleton() {
                             <div className='skeleton w-full h-full rounded-full'/>
                         </div>
                     </div>
-
+ 
                     <div className='chat-header mb-1'>
                         <div className='skeleton h-4 w-16'/>
                     </div>
