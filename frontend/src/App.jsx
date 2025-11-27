@@ -7,21 +7,19 @@ import SignUpPage from './pages/SignUpPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
-import { useAuthStore } from './store/useAuthStore.js';
+import { useAuthStore  } from './store/useAuthStore.js';
 import { Loader } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
 import { useThemeStore } from './store/useThemeStore.js';
 
 function App() {
   // ALL HOOKS MUST COME FIRST
-  const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
+  const { authUser, checkAuth, isCheckingAuth , onlineUsers } = useAuthStore();
   const { theme } = useThemeStore();  // ← moved here (top)
-
+ 
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
-
-  console.log(authUser);
 
   // NOW conditions can come after all hooks
   if (isCheckingAuth && !authUser) {

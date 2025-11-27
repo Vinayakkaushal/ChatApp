@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
 import ChatHeader from "./ChatHeader";
@@ -7,15 +7,38 @@ import MessageSkeleton from "./skeletons/MessageSkeleton";
 import { formatMessageTime } from "../lib/utils";
 
 export default function ChatContainer() {
-  const { messages, getMessages, isMessagesLoading, selectedUser } =
-    useChatStore();
-  const { authUser } = useAuthStore();
+  const {
+    messages,
+    getMessages,
+    isMessagesLoading,
+    selectedUser,
+    subscribeToMessages,
+    unsubscribeFromMessages,
+  } = useChatStore();
 
+  const { authUser } = useAuthStore();
+  const bottomRef = useRef(null);
+
+  // FETCH MESSAGES + SET SOCKET LISTENERS
   useEffect(() => {
-    if (selectedUser?._id) {
-      getMessages(selectedUser._id);
-    }
+    if (!selectedUser?._id) return;
+
+    getMessages(selectedUser._id);
+
+    // subscribe to messages only once per selected user
+    subscribeToMessages();
+
+    return () => {
+      unsubscribeFromMessages();
+    };
   }, [selectedUser?._id]);
+
+  // SCROLL TO BOTTOM ON NEW MESSAGES
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   if (isMessagesLoading)
     return (
@@ -30,7 +53,7 @@ export default function ChatContainer() {
     <div className="flex-1 flex flex-col overflow-auto">
       <ChatHeader />
 
-      {/* MESSAGES LIST */}
+      {/* MESSAGE LIST */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => (
           <div
@@ -60,7 +83,7 @@ export default function ChatContainer() {
               </time>
             </div>
 
-            {/* CHAT BUBBLE */}
+            {/* BUBBLE */}
             <div
               className={`chat-bubble flex flex-col max-w-[250px] ${
                 message.senderId === authUser._id
@@ -68,25 +91,22 @@ export default function ChatContainer() {
                   : "bg-base-200 text-base-content"
               }`}
             >
-              {/* IMAGE MESSAGE */}
               {message.image && (
                 <img
                   src={message.image}
-                  alt=""
                   className="rounded-md mb-2 max-w-[200px]"
                 />
               )}
 
-              {/* TEXT MESSAGE */}
-              {message.text && (
-                <p className="text-sm wrap-break-word">{message.text}</p>
-              )}
+              {message.text && <p className="text-sm">{message.text}</p>}
             </div>
           </div>
         ))}
+
+        {/* SCROLL ANCHOR */}
+        <div ref={bottomRef} />
       </div>
 
-      {/* INPUT */}
       <MessageInput />
     </div>
   );

@@ -86,15 +86,22 @@ updateProfile: async (base64Image) => {
   }
 },
 
-connectSocket : ()=>{
-  const {authUser} = get()
+connectSocket : () => {
+  const { authUser } = get();
   if (!authUser || get().socket?.connected) return;
 
+  const socket = io(BASE_URL, {
+    query: { userId: authUser._id }
+  });
 
-  const socket = io(BASE_URL)
-  socket.connect()
-  set({socket :socket})
+  socket.connect();
+  set({ socket });
+
+  socket.on("getOnlineUsers", (users) => {
+    set({ onlineUsers: users });
+  });
 },
+
 disconnectSocket : ()=>{
   if(get().socket?.connected) get().socket.disconnect();
 }
